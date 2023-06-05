@@ -1,0 +1,156 @@
+#########################
+# System                #
+#########################
+
+# System clock 240 MHz
+CONFIG_ESP32_DEFAULT_CPU_FREQ_240=y
+
+# Enable SPI PSRAM
+CONFIG_ESP32_SPIRAM_SUPPORT=y
+CONFIG_SPIRAM_CACHE_WORKAROUND=y
+CONFIG_SPIRAM_IGNORE_NOTFOUND=y
+CONFIG_SPIRAM_USE_MEMMAP=y
+
+# malloc() allocates memory in SPI RAM
+CONFIG_SPIRAM_USE_MALLOC=y
+
+# Allow .bss segment to be placed in SPI RAM
+CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
+
+# Try to allocate memories of WiFi and LWIP in SPIRAM firstly. If failed, allocate internal memory
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+
+# Reserve this amount of bytes for data that specifically needs to be in DMA or internal memory
+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=0
+
+# Maximum malloc() size, in bytes, to always put in internal memory
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=8192
+
+# Use external SPI RAM for mbedTLS
+CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC=y
+
+# Disable watchdog check of idle task on both CPUs. This is required for MicroPython to work.
+CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=n
+CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=n
+
+# Use partition table from "partitions_config.csv"
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_config.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions_config.csv"
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+
+# Only enable log level error for Bootloader
+CONFIG_BOOTLOADER_LOG_LEVEL_ERROR=y
+
+# Do NOT place frequently called Wi-Fi library RX functions in IRAM to save IRAM for MicroPython core
+CONFIG_ESP32_WIFI_RX_IRAM_OPT=n
+
+# Base of Wifi hostname
+CONFIG_LWIP_LOCAL_HOSTNAME="Rotimatic"
+
+
+#########################
+# FreeRTOS              #
+#########################
+
+# Number of Thread Local Storage Pointers each task will have. This is required for MicroPython to work.
+CONFIG_FREERTOS_THREAD_LOCAL_STORAGE_POINTERS=2
+
+
+#########################
+# ModBus                #
+#########################
+
+# Use RS232 interface for ModBus
+CONFIG_MB_UART_PHY_MODE_RS232=y
+
+# Use APIs of ESP-IDF v4.2 or later
+CONFIG_MODBUS_ZPL_IDF_V4_2=y
+
+# MAL task configuration
+CONFIG_MAL_MB_TASK_CORE=0
+CONFIG_MAL_MB_TASK_PRIO=2
+CONFIG_MAL_MB_TASK_STACK=2048
+
+# ModBus Master mode
+CONFIG_MODBUS_ZPL_MASTER=y
+
+# Ring buffer size
+CONFIG_FMB_SERIAL_BUF_SIZE=512
+
+# UART configuration
+CONFIG_MB_UART_PORT_NUM=2
+CONFIG_MB_UART_BAUD_RATE=115200
+CONFIG_MB_UART_RXD=12
+CONFIG_MB_UART_TXD=14
+
+# Modbus serial task stack size for event queue task
+CONFIG_FMB_SERIAL_TASK_STACK_SIZE=2560
+
+
+#########################
+# MicroPython           #
+#########################
+
+# Run WebREPL automatically on bootup
+CONFIG_MP_WEBREPL_AUTO_RUN=y
+
+# Use Websocket over TLS (wss) for WebREPL
+CONFIG_MP_WEBREPL_OVER_TLS=n
+
+
+#########################
+# Over-The-Air update   #
+#########################
+
+# Enable firmware update rollback (OTA)
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+
+# Notify OTA progress and status over MQTT interface
+CONFIG_OTA_NOTIFY_OVER_MQTT=n
+
+
+#########################
+# LVGL                  #
+#########################
+
+# Primary color of components
+CONFIG_LV_THEME_DEFAULT_COLOR_PRIMARY=0xE68E54
+
+# Swap the 2 bytes of RGB565 color
+CONFIG_LV_COLOR_16_SWAP=y
+
+# If "y", use malloc() and free() of stdlib.h to allocate dynamic objects in heap memory
+# If "n", use lv_mem_alloc() and lv_mem_free() from a separate memory pool with size of CONFIG_LV_MEM_SIZE_KILOBYTES
+CONFIG_LV_MEM_CUSTOM=y
+
+# Built-in fonts
+CONFIG_LV_FONT_MONTSERRAT_8=y
+CONFIG_LV_FONT_MONTSERRAT_10=y
+CONFIG_LV_FONT_MONTSERRAT_12=y
+CONFIG_LV_FONT_MONTSERRAT_14=y
+CONFIG_LV_FONT_MONTSERRAT_16=y
+CONFIG_LV_FONT_MONTSERRAT_18=y
+CONFIG_LV_FONT_MONTSERRAT_20=y
+CONFIG_LV_FONT_MONTSERRAT_22=y
+CONFIG_LV_FONT_MONTSERRAT_24=y
+CONFIG_LV_FONT_MONTSERRAT_26=y
+CONFIG_LV_FONT_MONTSERRAT_28=y
+CONFIG_LV_FONT_MONTSERRAT_30=y
+CONFIG_LV_FONT_MONTSERRAT_32=y
+CONFIG_LV_FONT_MONTSERRAT_34=y
+CONFIG_LV_FONT_MONTSERRAT_36=y
+CONFIG_LV_FONT_MONTSERRAT_38=y
+CONFIG_LV_FONT_MONTSERRAT_40=y
+CONFIG_LV_FONT_MONTSERRAT_42=y
+CONFIG_LV_FONT_MONTSERRAT_44=y
+CONFIG_LV_FONT_MONTSERRAT_46=y
+CONFIG_LV_FONT_MONTSERRAT_48=y
+
+
+#########################
+# Websocket server      #
+#########################
+
+# Enable Websocket server for slave board monitoring
+CONFIG_HTTPD_WS_SUPPORT=y

@@ -1,0 +1,35 @@
+menu "LCD ST7796S"
+
+    config LCD_SPI_HOST_DEV
+        int "ESP32 SPI Host (1:HSPI, 2:VSPI)"
+        range 1 2
+        default 1
+        help
+            1 : HSPI (SPI2), 2 : VSPI (SPI3)
+
+    config LCD_CLK_MHZ
+        int "SPI Clock Frequency in MHz (divisors of 80MHz)"
+        range 1 40
+        default 40
+
+    config LCD_CLK_IO_PIN
+        int "LCD SPI Clock IO pin"
+        range 0 39
+        default 0
+
+    config LCD_MOSI_IO_PIN
+        int "LCD SPI MOSI IO pin"
+        range 0 39
+        default 4
+
+    config LCD_SPI_MAX_TRANSFER_PIXELS
+        int "Maximum number of pixels of one SPI transmission"
+        range 2046 153600
+        default 153600
+        help
+            Under the hood, SPI driver uses DMA to transfer display data from MCU to LCD controller.
+            This config helps SPI driver allocate space for DMA descriptors at initialization.
+            Transferring 4092 byte (2046 pixel) needs one DMA descriptor (three 32-bit words)
+            As LVGL supports partial display updates, this config doesn't necessarily need to be equal to the LCD display size.
+
+endmenu

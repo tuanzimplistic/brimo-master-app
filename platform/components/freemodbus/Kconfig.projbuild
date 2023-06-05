@@ -1,0 +1,197 @@
+# Kconfig file for Modbus component
+
+menu "Modbus"
+
+    config MODBUS_ENABLE
+        bool "Enable Modbus component"
+        default y
+        help
+            Enable or disable Modbus component
+
+	choice
+        prompt "UART physical layer"
+        default MB_UART_PHY_MODE_RS485
+
+        config MB_UART_PHY_MODE_RS232
+            bool "UART RS232"
+        config MB_UART_PHY_MODE_RS485
+            bool "UART RS485"
+
+    endchoice
+    
+    config UART_LOOPBAK_TEST_ENABLE
+        bool "Enable UART loopback test"
+        default y
+    
+    choice
+        prompt "IDF version to use"
+        default MODBUS_ZPL_IDF_V4_2
+
+        config MODBUS_ZPL_IDF_V4_2
+            bool "ESP-IDF v4.2"
+        config MODBUS_ZPL_IDF_V4_0
+            bool "ESP-IDF v4.0"
+
+    endchoice
+
+    config MODBUS_ZPL_ENABLE
+        bool "Zimplistic Protocol Data Unit"
+        default y
+
+   menu "MAL Task"
+        depends on MODBUS_ENABLE 
+        config MAL_MB_TASK_CORE
+            int "Pin this MAL to core (0: PRO, 1: APP, 2: NO AFFINITY)"
+            range 0 2
+            default 1
+        config MAL_MB_TASK_PRIO
+            int "Task Priority"
+            default 21
+        config MAL_MB_TASK_STACK
+            int "Task Stack Size"
+            default 2048
+    endmenu #"MAL Task"
+
+    config MODBUS_FUNC_HANDLERS_MAX
+        depends on MODBUS_ENABLE
+        int "Maximum Count of Request Handlers"
+        range 16 127
+        default 64
+
+    config MODBUS_ZPL_MASTER
+        depends on MODBUS_ENABLE
+        bool "Enable Modbus master"
+        default y
+        help
+            Enable or disable Modbus master mode
+            
+    menu "Master Configuration"
+        depends on MODBUS_ZPL_MASTER
+        
+        config MB_UART_PORT_NUM
+            int "UART port number"
+            range 0 2
+            default 2
+            help
+                UART communication port number for Modbus example.
+
+        config MB_UART_BAUD_RATE
+            int "UART communication speed"
+            range 1200 460800
+            default 115200
+            help
+                UART communication speed for Modbus example.
+
+        config MB_UART_RXD
+            int "UART RXD pin number"
+            range 0 35
+            default 35
+            help
+                GPIO number for UART RX pin. See UART documentation for more information
+                about available pin numbers for UART.
+
+        config MB_UART_TXD
+            int "UART TXD pin number"
+            range 0 35
+            default 0
+            help
+                GPIO number for UART TX pin. See UART documentation for more information
+                about available pin numbers for UART.
+
+        config MB_UART_RTS
+            depends on MB_UART_PHY_MODE_RS485   # RS232 doesn't need RTS
+            int "UART RTS pin number"
+            range 0 35
+            default 4
+            help
+                GPIO number for UART RTS pin. This pin is connected to
+                ~RE/DE pin of RS485 transceiver to switch direction.
+                See UART documentation for more information about available pin
+                numbers for UART.
+
+        config FMB_MASTER_TIMEOUT_MS_RESPOND
+            int "Slave respond timeout (Milliseconds)"
+            default 150
+            range 50 400
+            help
+                    If master sends a frame which is not broadcast, it has to wait sometime for slave response.
+                    if slave is not respond in this time, the master will process timeout error.
+
+        config FMB_MASTER_DELAY_MS_CONVERT
+            int "Slave conversion delay (Milliseconds)"
+            default 200
+            range 50 400
+            help
+                    If master sends a broadcast frame, it has to wait conversion time to delay,
+                    then master can send next frame.
+
+        config FMB_QUEUE_LENGTH
+            int "Modbus serial task queue length"
+            range 0 200
+            default 20
+            help
+                    Modbus serial driver queue length. It is used by event queue task.
+                    See the serial driver API for more information.
+
+        config FMB_SERIAL_TASK_STACK_SIZE
+            int "Modbus serial task stack size"
+            range 768 8192
+            default 2048
+            help
+                    Modbus serial task stack size for event queue task.
+                    It may be adjusted when debugging is enabled (for example).
+
+        config FMB_SERIAL_BUF_SIZE
+            int "Modbus serial task RX/TX buffer size"
+            range 0 2048
+            default 256
+            help
+                    Modbus serial task RX and TX buffer size for UART driver initialization.
+                    This buffer is used for modbus frame transfer. The Modbus protocol maximum
+                    frame size is 256 bytes. Bigger size can be used for non standard implementations.
+
+        config FMB_SERIAL_TASK_PRIO
+            int "Modbus serial task priority"
+            range 3 25
+            default 20
+            help
+                    Modbus UART driver event task priority.
+                    The priority of Modbus controller task is equal to (CONFIG_FMB_SERIAL_TASK_PRIO - 1).
+
+        config FMB_CONTROLLER_STACK_SIZE
+            int "Modbus controller stack size"
+            range 0 8192
+            default 4096
+            help
+                    Modbus controller task stack size. The Stack size may be adjusted when
+                    debug mode is used which requires more stack size (for example).
+
+        config FMB_TIMER_GROUP
+            int "Modbus Timer group number"
+            range 0 1
+            default 0
+            help
+                    Modbus Timer group number that is used for timeout measurement.
+
+        config FMB_TIMER_INDEX
+            int "Modbus Timer index in the group"
+            range 0 1
+            default 0
+            help
+                    Modbus Timer Index in the group that is used for timeout measurement.
+
+        config FMB_TIMER_ISR_IN_IRAM
+            bool "Place timer interrupt handler into IRAM"
+            default y
+            select UART_ISR_IN_IRAM
+            help
+                    This option places Modbus timer IRQ handler into IRAM.
+                    This allows to avoid delays related to processing of non-IRAM-safe interrupts
+                    during a flash write operation (NVS updating a value, or some other
+                    flash API which has to perform an read/write operation and disable CPU cache).
+                    This option has dependency with the UART_ISR_IN_IRAM option which places UART interrupt
+                    handler into IRAM to prevent delays related to processing of UART events.
+
+    endmenu # "Modbus Configuration"
+
+endmenu

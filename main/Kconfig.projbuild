@@ -1,0 +1,100 @@
+menu "Itor3 master firmware configuration"
+
+    #########################
+    # MicroPython           #
+    #########################
+    menu "MicroPython"
+
+        config MP_WEBREPL_AUTO_RUN
+            bool "Run WebREPL automatically on bootup"
+            default n
+            help
+                Automatically starts WebREPL when firmware starts
+
+        config MP_WEBREPL_OVER_TLS
+            bool "Use Websocket over TLS (wss) for WebREPL"
+            default n
+            help
+                If yes, WebREPL must be accessed with wss theme (Websocket over TLS)
+                If no, WebREPL is accessed with ws theme (plain Websocket over TCP)
+
+    endmenu
+
+    #########################
+    # Over-The-Air update   #
+    #########################
+    menu "Over-The-Air firmware update"
+
+        config OTA_NOTIFY_OVER_MQTT
+            bool "Notify OTA progress and status over MQTT interface"
+            default n
+            help
+                If turned on, OTA progress and status are notified over MQTT interface and LCD.
+                If turned off, OTA progress and status are displayed on LCD only
+
+    endmenu
+
+    #########################
+    # Test station build    #
+    #########################
+    menu "Test station build"
+
+        config TEST_STATION_BUILD_ENABLED
+            bool "Enable test station build"
+            default n
+            help
+                This option indicates if this build is a special build for test station
+
+        menu "WiFi access point for test station"
+
+            config TEST_STATION_WIFI_SSID
+                string "WiFi SSID"
+                default "OQCZPLAP"
+                help
+                    WiFi SSID that the test station should connect to
+
+            config TEST_STATION_WIFI_PASSWORD
+                string "WiFi password"
+                default "Zpl@1234!"
+                help
+                    Password of the WiFi access point that the test station should connect to
+
+            config TEST_STATION_WIFI_RETRIES
+                int "Number of retries connecting to the WiFi access point"
+                range 3 255
+                default 100
+                help
+                    Number of attempts that ESP32 tries to connect to the given WiFi access point.
+                    Normally, one attempt takes approximately 2.5 seconds.
+        endmenu
+
+        menu "Static IP address of test station"
+
+            config TEST_STATION_IP_ADDR
+                string "IP address"
+                default "192.168.1.2"
+                help
+                    Static IP address of test station (e.g, 192.168.1.2)
+
+            config TEST_STATION_NETMASK
+                string "Netmask"
+                default "255.255.255.0"
+                help
+                    Netmask of test station (e.g, 255.255.255.0)
+
+            config TEST_STATION_GATEWAY
+                string "Default gateway"
+                default "192.168.1.1"
+                help
+                    Default gateway address of test station (e.g, 192.168.1.1)
+
+            config TEST_STATION_DNS
+                string "DNS server"
+                default "192.168.1.1"
+                help
+                    IP address of DNS server (e.g, 192.168.1.1)
+        endmenu
+
+    endmenu
+
+endmenu
