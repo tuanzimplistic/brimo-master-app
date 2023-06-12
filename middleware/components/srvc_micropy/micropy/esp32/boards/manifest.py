@@ -4,4 +4,4 @@ include("$(MPY_DIR)/extmod/uasyncio/manifest.py")
 include("$(MPY_DIR)/extmod/webrepl/manifest.py")
 
 # Freeze MicroPython scripts of Itor3 application
-freeze("$(MPY_DIR)/../../app_micropy")
+freeze("$(MPY_DIR)/../../../../app/py_app")
