@@ -70,10 +70,10 @@
 /*-------------------------------------------------------------------------------------------------------------------*/\
                                                                                                                        \
 /* Wifi SSID */                                                                                                        \
-X( PARAM_WIFI_SSID,                 0x0000,     string,     0,          33,         "my_ssid"                         )\
+X( PARAM_WIFI_SSID,                 0x0000,     string,     0,          33,         "Zimplistic"                         )\
                                                                                                                        \
 /* Wifi password */                                                                                                    \
-X( PARAM_WIFI_PSW,                  0x0001,     string,     0,          65,         "my_password"                     )\
+X( PARAM_WIFI_PSW,                  0x0001,     string,     0,          65,         "Zimplistic123"                     )\
                                                                                                                        \
 /* MQTT group that this MQTT client belongs to */                                                                      \
 X( PARAM_MQTT_GROUP_ID,             0x0010,     string,     0,          33,         "default"                         )\

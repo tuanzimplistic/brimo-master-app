@@ -137,7 +137,7 @@ int8_t s8_GUI_Get_Splash_Screen (GUI_screen_t ** ppstru_screen)
         /* "rotimatic" logo with 'o' in orange */
         lv_obj_t * px_lbl_logo = lv_label_create (px_screen, NULL);
         lv_label_set_recolor (px_lbl_logo, true);
-        lv_label_set_text (px_lbl_logo, "r#FFA500 o##000000 timatic#");
+        lv_label_set_text (px_lbl_logo, "Brimo");
 
         static lv_style_t x_style_logo;
         lv_style_init (&x_style_logo);
@@ -176,10 +176,10 @@ int8_t s8_GUI_Get_Splash_Screen (GUI_screen_t ** ppstru_screen)
         FWUESP_fw_desc_t stru_fw_desc;
         s8_FWUESP_Get_Fw_Descriptor (&stru_fw_desc);
 
-        g_px_lbl_fw_info = lv_label_create (px_screen, NULL);
-        lv_label_set_text_fmt (g_px_lbl_fw_info, "Platform v%s - %s", stru_fw_desc.pstri_ver, stri_script_info);
-        lv_obj_add_style (g_px_lbl_fw_info, LV_LABEL_PART_MAIN, &x_style_footer);
-        lv_obj_align (g_px_lbl_fw_info, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -30);
+        // g_px_lbl_fw_info = lv_label_create (px_screen, NULL);
+        // lv_label_set_text_fmt (g_px_lbl_fw_info, "Platform v%s - %s", stru_fw_desc.pstri_ver, stri_script_info);
+        // lv_obj_add_style (g_px_lbl_fw_info, LV_LABEL_PART_MAIN, &x_style_footer);
+        // lv_obj_align (g_px_lbl_fw_info, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -30);
 
         /* Footer text "Designed by Zimplistic" */
         lv_obj_t * px_lbl_footer =  lv_label_create (px_screen, NULL);
@@ -311,10 +311,10 @@ static int8_t s8_GUI_Run_Splash_Screen (void)
         uint16_t u16_script_info_len = sizeof (stri_script_info);
         if (s8_GUI_Get_Data_If_Changed (GUI_DATA_SCRIPT_BRIEF_INFO, stri_script_info, &u16_script_info_len) == GUI_OK)
         {
-            FWUESP_fw_desc_t stru_fw_desc;
-            s8_FWUESP_Get_Fw_Descriptor (&stru_fw_desc);
-            lv_label_set_text_fmt (g_px_lbl_fw_info, "Platform v%s - %s", stru_fw_desc.pstri_ver, stri_script_info);
-            lv_obj_align (g_px_lbl_fw_info, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -30);
+            // FWUESP_fw_desc_t stru_fw_desc;
+            // s8_FWUESP_Get_Fw_Descriptor (&stru_fw_desc);
+            // lv_label_set_text_fmt (g_px_lbl_fw_info, "Platform v%s - %s", "0", "0");
+            // lv_obj_align (g_px_lbl_fw_info, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -30);
         }
     }
 

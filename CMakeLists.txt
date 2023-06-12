@@ -13,4 +13,4 @@ include("${MODBUS_API_PATH}/modbus_api.cmake")
 
 # Include main IDF cmake file and define the project.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(Itor3)
+project(Brimo)

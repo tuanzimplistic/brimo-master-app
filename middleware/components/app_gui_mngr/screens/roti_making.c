@@ -120,6 +120,8 @@ static void v_GUI_Btn_Start_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
 static void v_GUI_Btn_Minus_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
 static void v_GUI_Btn_Plus_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
 static void v_GUI_Btn_Menu_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
+static void event_handler_drinks(lv_obj_t * px_obj, lv_event_t enm_event);
+static void event_handler_nocups(lv_obj_t * px_obj, lv_event_t enm_event);
 
 /*
 ** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -174,32 +176,26 @@ static lv_obj_t * g_px_lbl_wifi_signal = NULL;
 /** @brief  Label of wifi access point name */
 static lv_obj_t * g_px_lbl_ap = NULL;
 
-/** @brief  Array of objects for roast levels */
-static lv_obj_t * g_pax_roast_level[GUI_MAX_ROAST_LEVEL];
-
-/** @brief  Array of objects for thickness levels */
-static lv_obj_t * g_pax_thickness_level[GUI_MAX_THICKNESS_LEVEL];
-
-/** @brief  Array of objects for oil levels */
-static lv_obj_t * g_pax_oil_level[GUI_MAX_OIL_LEVEL];
-
-/** @brief  Label for cooking status */
-static lv_obj_t * g_px_lbl_status = NULL;
-
-/** @brief  Label for number of Roti's has been made */
-static lv_obj_t * g_px_lbl_roti_made = NULL;
-
-/** @brief  Label for number of Roti's to be made */
-static lv_obj_t * g_px_lbl_roti_count = NULL;
-
 /** @brief  Image button to start/stop cooking */
 static lv_obj_t * g_px_imgbtn_start;
 
-/** @brief  Label of recipe name */
-static lv_obj_t * g_px_lbl_recipe;
+/** @brief  list of available drinks */
+const char *g_arr_drinks[7] = {"Cappuccino", "Mocha", "Cortado", "Latte", "Macchiato", "Espresso", "Affogato"};
 
-/** @brief  Label of flour name */
-static lv_obj_t * g_px_lbl_flour;
+/** @brief  list of available no cups */
+const char *g_arr_nocups[7] = {"5", "10", "15", "20", "25", "30", "35"};
+
+/** @brief  list of drinks */
+static lv_obj_t * g_list_drinks;
+
+/** @brief  list of cups */
+static lv_obj_t * g_list_no_cups;
+
+/** @brief  current drink */
+static lv_obj_t * g_btn_current_drink = NULL;
+
+/** @brief  current cup */
+static lv_obj_t * g_btn_current_cup = NULL;
 
 /*
 ** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -233,7 +229,7 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
 
         /* Left panel */
         lv_obj_t * px_left_panel = lv_obj_create (px_screen, NULL);
-        lv_obj_set_size (px_left_panel, 120, LV_VER_RES);
+        lv_obj_set_size (px_left_panel, 90, LV_VER_RES);
 
         static lv_style_t x_style_left_panel;
         lv_style_init (&x_style_left_panel);
@@ -244,7 +240,7 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
 
         /* Menu button */
         lv_obj_t * px_btn_menu = lv_btn_create (px_left_panel, NULL);
-        lv_obj_set_size (px_btn_menu, 100, 40);
+        lv_obj_set_size (px_btn_menu, 80, 40);
         lv_obj_align (px_btn_menu, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
         lv_obj_set_event_cb (px_btn_menu, v_GUI_Btn_Menu_Event_Cb);
         lv_label_set_text (lv_label_create (px_btn_menu, NULL), "MENU");
@@ -258,117 +254,10 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
         lv_style_set_text_font (&x_style_menu_btn, LV_STATE_DEFAULT, &arial_bold_18);
         lv_obj_add_style (px_btn_menu, LV_LABEL_PART_MAIN, &x_style_menu_btn);
 
-        /* Style of text in left panel */
-        static lv_style_t x_style_left_panel_text;
-        lv_style_init (&x_style_left_panel_text);
-        lv_style_set_text_font (&x_style_left_panel_text, LV_STATE_DEFAULT, &lv_font_montserrat_18);
-        lv_style_set_text_color (&x_style_left_panel_text, LV_STATE_DEFAULT, LV_THEME_DEFAULT_COLOR_PRIMARY);
-
-        /* Style of roast/thickness/oil levels */
-        static lv_style_t x_style_level;
-        lv_style_init (&x_style_level);
-        lv_style_set_radius (&x_style_level, LV_STATE_DEFAULT, 0);
-        lv_style_set_border_color (&x_style_level, LV_STATE_DEFAULT, LV_THEME_DEFAULT_COLOR_PRIMARY);
-        lv_style_set_border_width (&x_style_level, LV_STATE_DEFAULT, 1);
-
-        /* Background for roast level */
-        lv_obj_t * px_roast_background = lv_obj_create (px_left_panel, NULL);
-        lv_obj_set_size (px_roast_background, 97, 45);
-        lv_obj_add_style (px_roast_background, LV_LABEL_PART_MAIN, &x_style_left_panel);
-        lv_obj_align (px_roast_background, NULL, LV_ALIGN_IN_TOP_LEFT, 11, 80);
-        lv_obj_set_event_cb (px_roast_background, v_GUI_Roast_Level_Event_Cb);
-
-        /* "Roast" label */
-        lv_obj_t * px_lbl_roast = lv_label_create (px_roast_background, NULL);
-        lv_label_set_text (px_lbl_roast, "Roast");
-        lv_obj_add_style (px_lbl_roast, LV_LABEL_PART_MAIN, &x_style_left_panel_text);
-
-        /* Roast level */
-        uint8_t u8_roast_level = 1;
-        s8_GUI_Get_Data (GUI_DATA_ROAST_LEVEL, &u8_roast_level, NULL);
-        for (uint8_t u8_idx = 0; u8_idx < GUI_MAX_ROAST_LEVEL; u8_idx++)
-        {
-            g_pax_roast_level[u8_idx] = lv_obj_create (px_roast_background, NULL);
-            lv_obj_set_size (g_pax_roast_level[u8_idx], 17, 17);
-            if (u8_idx == 0)
-            {
-                lv_obj_align (g_pax_roast_level[u8_idx], px_lbl_roast, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-            }
-            else
-            {
-                lv_obj_align (g_pax_roast_level[u8_idx], g_pax_roast_level[u8_idx - 1], LV_ALIGN_OUT_RIGHT_MID, 3, 0);
-            }
-            lv_obj_set_click (g_pax_roast_level[u8_idx], false);
-            lv_obj_add_style (g_pax_roast_level[u8_idx], LV_LABEL_PART_MAIN, &x_style_level);
-        }
-
-        /* Background for thickness level */
-        lv_obj_t * px_thickness_background = lv_obj_create (px_left_panel, NULL);
-        lv_obj_set_size (px_thickness_background, 97, 45);
-        lv_obj_add_style (px_thickness_background, LV_LABEL_PART_MAIN, &x_style_left_panel);
-        lv_obj_align (px_thickness_background, NULL, LV_ALIGN_IN_TOP_LEFT, 11, 150);
-        lv_obj_set_event_cb (px_thickness_background, v_GUI_Thickness_Level_Event_Cb);
-
-        /* "Thickness" label */
-        lv_obj_t * px_lbl_thickness = lv_label_create (px_thickness_background, NULL);
-        lv_label_set_text (px_lbl_thickness, "Thickness");
-        lv_obj_add_style (px_lbl_thickness, LV_LABEL_PART_MAIN, &x_style_left_panel_text);
-
-        /* Thickness level */
-        uint8_t u8_thickness_level = 1;
-        s8_GUI_Get_Data (GUI_DATA_THICKNESS_LEVEL, &u8_thickness_level, NULL);
-        for (uint8_t u8_idx = 0; u8_idx < GUI_MAX_THICKNESS_LEVEL; u8_idx++)
-        {
-            g_pax_thickness_level[u8_idx] = lv_obj_create (px_thickness_background, NULL);
-            lv_obj_set_size (g_pax_thickness_level[u8_idx], 17, 17);
-            if (u8_idx == 0)
-            {
-                lv_obj_align (g_pax_thickness_level[u8_idx], px_lbl_thickness, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-            }
-            else
-            {
-                lv_obj_align (g_pax_thickness_level[u8_idx], g_pax_thickness_level[u8_idx - 1],
-                              LV_ALIGN_OUT_RIGHT_MID, 3, 0);
-            }
-            lv_obj_set_click (g_pax_thickness_level[u8_idx], false);
-            lv_obj_add_style (g_pax_thickness_level[u8_idx], LV_LABEL_PART_MAIN, &x_style_level);
-        }
-
-        /* Background for oil level */
-        lv_obj_t * px_oil_background = lv_obj_create (px_left_panel, NULL);
-        lv_obj_set_size (px_oil_background, 97, 45);
-        lv_obj_add_style (px_oil_background, LV_LABEL_PART_MAIN, &x_style_left_panel);
-        lv_obj_align (px_oil_background, NULL, LV_ALIGN_IN_TOP_LEFT, 11, 220);
-        lv_obj_set_event_cb (px_oil_background, v_GUI_Oil_Level_Event_Cb);
-
-        /* "Oil" label */
-        lv_obj_t * px_lbl_oil = lv_label_create (px_oil_background, NULL);
-        lv_label_set_text (px_lbl_oil, "Oil");
-        lv_obj_add_style (px_lbl_oil, LV_LABEL_PART_MAIN, &x_style_left_panel_text);
-
-        /* Oil level */
-        uint8_t u8_oil_level = 1;
-        s8_GUI_Get_Data (GUI_DATA_OIL_LEVEL, &u8_oil_level, NULL);
-        for (uint8_t u8_idx = 0; u8_idx < GUI_MAX_OIL_LEVEL; u8_idx++)
-        {
-            g_pax_oil_level[u8_idx] = lv_obj_create (px_oil_background, NULL);
-            lv_obj_set_size (g_pax_oil_level[u8_idx], 17, 17);
-            if (u8_idx == 0)
-            {
-                lv_obj_align (g_pax_oil_level[u8_idx], px_lbl_oil, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-            }
-            else
-            {
-                lv_obj_align (g_pax_oil_level[u8_idx], g_pax_oil_level[u8_idx - 1], LV_ALIGN_OUT_RIGHT_MID, 3, 0);
-            }
-            lv_obj_set_click (g_pax_oil_level[u8_idx], false);
-            lv_obj_add_style (g_pax_oil_level[u8_idx], LV_LABEL_PART_MAIN, &x_style_level);
-        }
-
         /* Right panel */
         lv_obj_t * px_right_panel = lv_obj_create (px_screen, NULL);
-        lv_obj_set_size (px_right_panel, 360, LV_VER_RES);
-        lv_obj_set_pos (px_right_panel, 120, 0);
+        lv_obj_set_size (px_right_panel, 390, LV_VER_RES);
+        lv_obj_set_pos (px_right_panel, 90, 0);
 
         static lv_style_t x_style_right_panel;
         lv_style_init (&x_style_right_panel);
@@ -415,74 +304,63 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
         lv_obj_add_style (g_px_lbl_ap, LV_LABEL_PART_MAIN, &x_style_ap);
         lv_obj_align (g_px_lbl_ap, px_lbl_wifi_background, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
 
-        /* Cooking status label */
-        g_px_lbl_status = lv_label_create (px_right_panel, NULL);
-        static lv_style_t x_style_status;
-        lv_style_init (&x_style_status);
-        lv_style_set_text_letter_space (&x_style_status, LV_STATE_DEFAULT, 2);
-        lv_obj_add_style (g_px_lbl_status, LV_LABEL_PART_MAIN, &x_style_status);
+        /* options */
+        lv_obj_t * btn;
+        int i;
+        lv_obj_t * lbl_drinks = lv_label_create(px_right_panel, NULL);
+        lv_obj_align( lbl_drinks, px_right_panel, LV_ALIGN_OUT_LEFT_TOP, 80, 20 );
+        lv_label_set_text_fmt(lbl_drinks, "%s", "Choose a Drink");
+        /*Create a list*/
+        g_list_drinks = lv_list_create(px_right_panel, NULL);
+        lv_obj_set_size(g_list_drinks, 210, 200);
+        lv_obj_align (g_list_drinks, px_right_panel, LV_ALIGN_OUT_LEFT_TOP, 210, 50);
+        lv_list_set_scrollbar_mode(g_list_drinks, LV_SCROLLBAR_MODE_AUTO);
 
-        /* Number of Roti's has been made */
-        g_px_lbl_roti_made = lv_label_create (px_right_panel, NULL);
-        static lv_style_t x_style_roti_count;
-        lv_style_init (&x_style_roti_count);
-        lv_style_set_text_font (&x_style_roti_count, LV_STATE_DEFAULT, &arial_96);
-        lv_style_set_text_color (&x_style_roti_count, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-        lv_obj_add_style (g_px_lbl_roti_made, LV_LABEL_PART_MAIN, &x_style_roti_count);
+        /*Add buttons to the list*/
+        for(i = 0; i < sizeof(g_arr_drinks)/sizeof(char*); i++) {
+            btn = lv_btn_create(g_list_drinks, NULL);
+            lv_obj_set_width(btn, 120);
+            lv_obj_set_event_cb(btn, event_handler_drinks);
 
-        /* "of" label for Roti count */
-        lv_obj_t * px_lbl_of = lv_label_create (px_right_panel, NULL);
-        lv_label_set_text (px_lbl_of, "of");
-        lv_obj_align (px_lbl_of, NULL, LV_ALIGN_IN_TOP_MID, 0, 120);
+            lv_obj_t * lbl = lv_label_create(btn, NULL);
+            lv_obj_align( lbl, NULL, LV_ALIGN_CENTER, 0, 0 );
+            lv_label_set_text_fmt(lbl, "%s", g_arr_drinks[i]);
+        }
 
-        /* Number of Roti's to be made */
-        g_px_lbl_roti_count = lv_label_create (px_right_panel, NULL);
-        lv_obj_add_style (g_px_lbl_roti_count, LV_LABEL_PART_MAIN, &x_style_roti_count);
+        /*Select the first button by default*/
+        g_btn_current_drink = lv_obj_get_child(g_list_drinks, 0);
+        lv_obj_set_state(g_btn_current_drink, LV_STATE_CHECKED);
 
-        /* Style for image buttons, darken the buttons when pressed */
-        static lv_style_t x_style_imgbtn;
-        lv_style_init (&x_style_imgbtn);
-        lv_style_set_image_recolor_opa (&x_style_imgbtn, LV_STATE_PRESSED, LV_OPA_30);
-        lv_style_set_image_recolor (&x_style_imgbtn, LV_STATE_PRESSED, LV_COLOR_BLACK);
+        /*Create a second list with up and down buttons*/
+        lv_obj_t * lbl_cups = lv_label_create(px_right_panel, NULL);
+        lv_obj_align( lbl_cups, px_right_panel, LV_ALIGN_OUT_LEFT_TOP, 255, 20 );
+        lv_label_set_text_fmt(lbl_cups, "%s", "Choose Cups");
 
+        g_list_no_cups = lv_list_create(px_right_panel, NULL);
+        lv_obj_set_size(g_list_no_cups, 120, 200);
+        lv_obj_align (g_list_no_cups, px_right_panel, LV_ALIGN_OUT_LEFT_TOP, 335, 50);
+        lv_list_set_scrollbar_mode(g_list_no_cups, LV_SCROLLBAR_MODE_AUTO);
+
+        for(i = 0; i < sizeof(g_arr_nocups)/sizeof(char*); i++) {
+            btn = lv_btn_create(g_list_no_cups, NULL);
+            lv_obj_set_width(btn, 60);
+            lv_obj_set_event_cb(btn, event_handler_nocups);
+
+            lv_obj_t * lbl = lv_label_create(btn, NULL);
+            lv_obj_align( lbl, NULL, LV_ALIGN_CENTER, 0, 0 );
+            lv_label_set_text_fmt(lbl, "%s", g_arr_nocups[i]);
+        }
+
+        g_btn_current_cup = lv_obj_get_child(g_list_no_cups, 0);
+        lv_obj_set_state(g_btn_current_cup, LV_STATE_CHECKED);
         /* Start/Stop cooking button */
-        g_px_imgbtn_start = lv_imgbtn_create (px_right_panel, NULL);
-        lv_obj_add_style (g_px_imgbtn_start, LV_IMGBTN_PART_MAIN, &x_style_imgbtn);
-        lv_imgbtn_set_src (g_px_imgbtn_start, LV_BTN_STATE_RELEASED, &img_play);
-        lv_obj_align (g_px_imgbtn_start, NULL, LV_ALIGN_IN_TOP_MID, 0, 150);
+        g_px_imgbtn_start = lv_btn_create (px_right_panel, NULL);
+        lv_obj_set_width (g_px_imgbtn_start, 100);
+        lv_obj_align (g_px_imgbtn_start, px_right_panel, LV_ALIGN_OUT_LEFT_TOP, 350, 260);
         lv_obj_set_event_cb (g_px_imgbtn_start, v_GUI_Btn_Start_Event_Cb);
+        lv_label_set_text (lv_label_create (g_px_imgbtn_start, NULL), "START");
 
-        /* Minus button */
-        lv_obj_t * px_imgbtn_minus = lv_imgbtn_create (px_right_panel, NULL);
-        lv_obj_add_style (px_imgbtn_minus, LV_IMGBTN_PART_MAIN, &x_style_imgbtn);
-        lv_imgbtn_set_src (px_imgbtn_minus, LV_BTN_STATE_RELEASED, &img_minus);
-        lv_obj_align (px_imgbtn_minus, g_px_imgbtn_start, LV_ALIGN_OUT_LEFT_MID, -20, 0);
-        lv_obj_set_event_cb (px_imgbtn_minus, v_GUI_Btn_Minus_Event_Cb);
-
-        /* Plus button */
-        lv_obj_t * px_imgbtn_plus = lv_imgbtn_create (px_right_panel, NULL);
-        lv_obj_add_style (px_imgbtn_plus, LV_IMGBTN_PART_MAIN, &x_style_imgbtn);
-        lv_imgbtn_set_src (px_imgbtn_plus, LV_BTN_STATE_RELEASED, &img_plus);
-        lv_obj_align (px_imgbtn_plus, g_px_imgbtn_start, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
-        lv_obj_set_event_cb (px_imgbtn_plus, v_GUI_Btn_Plus_Event_Cb);
-
-        /* Label of recipe name */
-        g_px_lbl_recipe = lv_label_create (px_right_panel, NULL);
-        static lv_style_t x_style_recipe;
-        lv_style_init (&x_style_recipe);
-        lv_style_set_text_font (&x_style_recipe, LV_STATE_DEFAULT, &arial_bold_18);
-        lv_obj_add_style (g_px_lbl_recipe, LV_LABEL_PART_MAIN, &x_style_recipe);
-
-        /* Label of flour name */
-        g_px_lbl_flour = lv_label_create (px_right_panel, NULL);
-        lv_label_set_long_mode (g_px_lbl_flour, LV_LABEL_LONG_SROLL_CIRC);
-        lv_obj_set_width (g_px_lbl_flour, 300);
-        lv_label_set_align (g_px_lbl_flour, LV_LABEL_ALIGN_CENTER);
-
-        static lv_style_t x_style_flour;
-        lv_style_init (&x_style_flour);
-        lv_style_set_text_color (&x_style_flour, LV_STATE_DEFAULT, LV_COLOR_GRAY);
-        lv_obj_add_style (g_px_lbl_flour, LV_LABEL_PART_MAIN, &x_style_flour);
+        lv_obj_add_style (g_px_imgbtn_start, LV_LABEL_PART_MAIN, &x_style_menu_btn);
 
         /* Done */
         g_stru_screen.px_lv_screen = px_screen;
@@ -491,6 +369,24 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
 
     *ppstru_screen = &g_stru_screen;
     return GUI_OK;
+}
+
+static void event_handler_drinks(lv_obj_t * px_obj, lv_event_t enm_event)
+{
+    if(enm_event == LV_EVENT_CLICKED) {
+        lv_obj_clear_state(g_btn_current_drink, LV_STATE_CHECKED);
+        g_btn_current_drink = px_obj;
+        lv_obj_set_state(px_obj, LV_STATE_CHECKED);
+    }
+}
+
+static void event_handler_nocups(lv_obj_t * px_obj, lv_event_t enm_event)
+{
+    if(enm_event == LV_EVENT_CLICKED) {
+        lv_obj_clear_state(g_btn_current_cup, LV_STATE_CHECKED);
+        g_btn_current_cup = px_obj;
+        lv_obj_set_state(px_obj, LV_STATE_CHECKED);
+    }
 }
 
 /**
@@ -608,92 +504,13 @@ static int8_t s8_GUI_Run_Roti_Making_Screen (void)
     {
         GUI_TIMER_RESET (u32_data_timer);
 
-        /* Refresh roast level */
-        uint8_t u8_roast_level = 0;
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_ROAST_LEVEL, &u8_roast_level, NULL) == GUI_OK)
-        {
-            for (uint8_t u8_idx = 0; u8_idx < GUI_MAX_ROAST_LEVEL; u8_idx++)
-            {
-                _lv_obj_set_style_local_color (g_pax_roast_level[u8_idx], LV_LABEL_PART_MAIN, LV_STYLE_BG_COLOR,
-                            (u8_idx < u8_roast_level) ? LV_THEME_DEFAULT_COLOR_PRIMARY : LV_COLOR_WHITE);
-            }
-        }
-
-        /* Refresh thickness level */
-        uint8_t u8_thickness_level = 0;
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_THICKNESS_LEVEL, &u8_thickness_level, NULL) == GUI_OK)
-        {
-            for (uint8_t u8_idx = 0; u8_idx < GUI_MAX_THICKNESS_LEVEL; u8_idx++)
-            {
-                _lv_obj_set_style_local_color (g_pax_thickness_level[u8_idx], LV_LABEL_PART_MAIN, LV_STYLE_BG_COLOR,
-                            (u8_idx < u8_thickness_level) ? LV_THEME_DEFAULT_COLOR_PRIMARY : LV_COLOR_WHITE);
-            }
-        }
-
-        /* Refresh oil level */
-        uint8_t u8_oil_level = 0;
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_OIL_LEVEL, &u8_oil_level, NULL) == GUI_OK)
-        {
-            for (uint8_t u8_idx = 0; u8_idx < GUI_MAX_OIL_LEVEL; u8_idx++)
-            {
-                _lv_obj_set_style_local_color (g_pax_oil_level[u8_idx], LV_LABEL_PART_MAIN, LV_STYLE_BG_COLOR,
-                            (u8_idx < u8_oil_level) ? LV_THEME_DEFAULT_COLOR_PRIMARY : LV_COLOR_WHITE);
-            }
-        }
-
         /* Refresh number of Roti's has been made */
-        uint8_t u8_roti_made = 0;
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_ROTI_MADE, &u8_roti_made, NULL) == GUI_OK)
-        {
-            lv_label_set_text_fmt (g_px_lbl_roti_made, "%d", u8_roti_made);
-            lv_obj_align (g_px_lbl_roti_made, NULL, LV_ALIGN_IN_RIGHT_MID, -195, -60);
-        }
 
         /* Refresh number of Roti's to be made */
-        uint8_t u8_roti_count = 0;
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_ROTI_COUNT, &u8_roti_count, NULL) == GUI_OK)
-        {
-            lv_label_set_text_fmt (g_px_lbl_roti_count, "%d", u8_roti_count);
-            lv_obj_align (g_px_lbl_roti_count, NULL, LV_ALIGN_IN_LEFT_MID, 195, -60);
-        }
 
         /* Refresh recipe name */
-        char stri_buf[64];
-        uint16_t u16_len = sizeof (stri_buf);
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_RECIPE_NAME, stri_buf, &u16_len) == GUI_OK)
-        {
-            lv_label_set_text (g_px_lbl_recipe, stri_buf);
-            lv_obj_align (g_px_lbl_recipe, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -50);
-        }
 
         /* Refresh flour name */
-        u16_len = sizeof (stri_buf);
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_FLOUR_NAME, stri_buf, &u16_len) == GUI_OK)
-        {
-            lv_label_set_text (g_px_lbl_flour, stri_buf);
-            lv_obj_align (g_px_lbl_flour, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -25);
-        }
-
-        /* Refresh cooking state */
-        uint8_t u8_cooking_state = 0;
-        if (s8_GUI_Get_Data_If_Changed (GUI_DATA_COOKING_STATE, &u8_cooking_state, NULL) == GUI_OK)
-        {
-            /* If idle */
-            if (u8_cooking_state == 0)
-            {
-                lv_label_set_text (g_px_lbl_status, "LET'S GET COOKING!");
-                lv_obj_align (g_px_lbl_status, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
-                lv_imgbtn_set_src (g_px_imgbtn_start, LV_BTN_STATE_RELEASED, &img_play);
-            }
-
-            /* If cooking */
-            else if (u8_cooking_state == 1)
-            {
-                lv_label_set_text (g_px_lbl_status, "COOKING...");
-                lv_obj_align (g_px_lbl_status, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
-                lv_imgbtn_set_src (g_px_imgbtn_start, LV_BTN_STATE_RELEASED, &img_pause);
-            }
-        }
     }
 
     return GUI_OK;
@@ -727,93 +544,6 @@ static void v_GUI_Lbl_Wifi_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
 ** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 **
 ** @brief
-**      Handler of events occurring on Roast level background
-**
-** @param [in]
-**      px_obj: The object on which the event occurred
-**
-** @param [in]
-**      enm_event: The occurred event
-**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-*/
-static void v_GUI_Roast_Level_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
-{
-    /* Only process click event */
-    if (enm_event == LV_EVENT_CLICKED)
-    {
-        /* Increase roast level */
-        uint8_t u8_roast_level = 0;
-        if (s8_GUI_Get_Data (GUI_DATA_ROAST_LEVEL, &u8_roast_level, NULL) == GUI_OK)
-        {
-            u8_roast_level = (u8_roast_level < GUI_MAX_ROAST_LEVEL) ? u8_roast_level + 1 : 1;
-            s8_GUI_Set_Data (GUI_DATA_ROAST_LEVEL, &u8_roast_level, sizeof (u8_roast_level));
-        }
-    }
-}
-
-/**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-**
-** @brief
-**      Handler of events occurring on Thickness level background
-**
-** @param [in]
-**      px_obj: The object on which the event occurred
-**
-** @param [in]
-**      enm_event: The occurred event
-**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-*/
-static void v_GUI_Thickness_Level_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
-{
-    /* Only process click event */
-    if (enm_event == LV_EVENT_CLICKED)
-    {
-        /* Increase thickness level */
-        uint8_t u8_thickness_level = 0;
-        if (s8_GUI_Get_Data (GUI_DATA_THICKNESS_LEVEL, &u8_thickness_level, NULL) == GUI_OK)
-        {
-            u8_thickness_level = (u8_thickness_level < GUI_MAX_THICKNESS_LEVEL) ? u8_thickness_level + 1 : 1;
-            s8_GUI_Set_Data (GUI_DATA_THICKNESS_LEVEL, &u8_thickness_level, sizeof (u8_thickness_level));
-        }
-    }
-}
-
-/**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-**
-** @brief
-**      Handler of events occurring on Oil level background
-**
-** @param [in]
-**      px_obj: The object on which the event occurred
-**
-** @param [in]
-**      enm_event: The occurred event
-**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-*/
-static void v_GUI_Oil_Level_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
-{
-    /* Only process click event */
-    if (enm_event == LV_EVENT_CLICKED)
-    {
-        /* Increase oil level */
-        uint8_t u8_oil_level = 0;
-        if (s8_GUI_Get_Data (GUI_DATA_OIL_LEVEL, &u8_oil_level, NULL) == GUI_OK)
-        {
-            u8_oil_level = (u8_oil_level < GUI_MAX_OIL_LEVEL) ? u8_oil_level + 1 : 1;
-            s8_GUI_Set_Data (GUI_DATA_OIL_LEVEL, &u8_oil_level, sizeof (u8_oil_level));
-        }
-    }
-}
-
-/**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-**
-** @brief
 **      Event handler of button toggling cooking
 **
 ** @param [in]
@@ -835,64 +565,6 @@ static void v_GUI_Btn_Start_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
         {
             u8_cooking_started = !u8_cooking_started;
             s8_GUI_Set_Data (GUI_DATA_COOKING_STARTED, &u8_cooking_started, sizeof (u8_cooking_started));
-        }
-    }
-}
-
-/**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-**
-** @brief
-**      Event handler of button minus
-**
-** @param [in]
-**      px_obj: The object on which the event occurred
-**
-** @param [in]
-**      enm_event: The occurred event
-**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-*/
-static void v_GUI_Btn_Minus_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
-{
-    /* Only process click event */
-    if (enm_event == LV_EVENT_CLICKED)
-    {
-        /* Decrease number of roti's to be made */
-        uint8_t u8_roti_count = 0;
-        if (s8_GUI_Get_Data (GUI_DATA_ROTI_COUNT, &u8_roti_count, NULL) == GUI_OK)
-        {
-            u8_roti_count = (u8_roti_count > 1) ? u8_roti_count - 1 : 1;
-            s8_GUI_Set_Data (GUI_DATA_ROTI_COUNT, &u8_roti_count, sizeof (u8_roti_count));
-        }
-    }
-}
-
-/**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-**
-** @brief
-**      Event handler of button plus
-**
-** @param [in]
-**      px_obj: The object on which the event occurred
-**
-** @param [in]
-**      enm_event: The occurred event
-**
-** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-*/
-static void v_GUI_Btn_Plus_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
-{
-    /* Only process click event */
-    if (enm_event == LV_EVENT_CLICKED)
-    {
-        /* Increase number of roti's to be made */
-        uint8_t u8_roti_count = 0;
-        if (s8_GUI_Get_Data (GUI_DATA_ROTI_COUNT, &u8_roti_count, NULL) == GUI_OK)
-        {
-            u8_roti_count++;
-            s8_GUI_Set_Data (GUI_DATA_ROTI_COUNT, &u8_roti_count, sizeof (u8_roti_count));
         }
     }
 }

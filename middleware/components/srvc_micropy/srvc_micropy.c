@@ -73,8 +73,8 @@
 #   define MP_WEBREPL_STARTUP_SCRIPT    "_start_webrepl.py"
 #endif
 
-/** @brief  Name of the script starting Itor3_Pyapp */
-#define MP_ITOR3_PYAPP_STARTUP_SCRIPT   "_start_itor3_pyapp.py"
+/** @brief  Name of the script starting Zimplistic_Pyapp */
+#define MP_ZIMPLISTIC_PYAPP_STARTUP_SCRIPT   "_start_zimplistic_pyapp.py"
 
 /** @brief  Automatically start WebREPL on bootup */
 #ifdef CONFIG_MP_WEBREPL_AUTO_RUN
@@ -365,7 +365,7 @@ static int8_t s8_MP_Init_Env (void * pv_task_sp)
     pyexec_file_if_exists ("boot.py");
     
     /* Run startup script of Itor3_Pyapp */
-    pyexec_frozen_module (MP_ITOR3_PYAPP_STARTUP_SCRIPT);
+    pyexec_frozen_module (MP_ZIMPLISTIC_PYAPP_STARTUP_SCRIPT);
 
     return MP_OK;
 }
