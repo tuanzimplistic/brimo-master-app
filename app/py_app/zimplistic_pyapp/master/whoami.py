@@ -3,8 +3,8 @@ Who Am I (WAI) class
 """
 
 from collections import namedtuple
-from itor3_pyapp import *
-from itor3_pyapp.master.itor3command import *
+from zimplistic_pyapp import *
+from zimplistic_pyapp.master.itor3command import *
 
 class WAIConstants():
     ## Switch context code

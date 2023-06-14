@@ -364,7 +364,7 @@ static int8_t s8_MP_Init_Env (void * pv_task_sp)
     pyexec_frozen_module ("_boot.py");
     pyexec_file_if_exists ("boot.py");
     
-    /* Run startup script of Itor3_Pyapp */
+    /* Run startup script of zimplistic_pyapp */
     pyexec_frozen_module (MP_ZIMPLISTIC_PYAPP_STARTUP_SCRIPT);
 
     return MP_OK;

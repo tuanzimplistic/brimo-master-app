@@ -13,7 +13,7 @@ idf_component_register(
         "screens/screen_common.c"
         "screens/splash.c"
         "screens/cam_screen.c"
-        "screens/roti_making.c"
+        "screens/x_making.c"
         "screens/wifi_setting.c"
         "screens/virtual_keyboard.c"
         "screens/menu.c"

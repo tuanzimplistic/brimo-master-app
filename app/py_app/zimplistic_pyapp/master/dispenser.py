@@ -1,9 +1,9 @@
 """
 Dispenser (DS) Class
 """
-from itor3_pyapp import *
-from itor3_pyapp.master.itor3command import *
-from itor3_pyapp.app.log import *
+from zimplistic_pyapp import *
+from zimplistic_pyapp.master.itor3command import *
+from zimplistic_pyapp.app.log import *
 from collections import namedtuple
 import uasyncio
 

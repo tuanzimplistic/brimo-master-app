@@ -8,4 +8,4 @@ pause > nul
 exit
 
 :openDoc
-start Itor3_pyapp_document\index.html
+start zimplistic_pyapp_document\index.html

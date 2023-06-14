@@ -4,7 +4,7 @@ Contains functions to decode the buffer.
 
 from ustruct import unpack
 
-from itor3_pyapp.constants import Endian, FormatCharacters
+from zimplistic_pyapp.constants import Endian, FormatCharacters
 ##
 # @brief 
 # This class is used to decode the memory buffer sent from C.

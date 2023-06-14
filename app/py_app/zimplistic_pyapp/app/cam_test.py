@@ -1,7 +1,7 @@
 import cam
 import os
 import time
-from itor3_pyapp.master.gpio import *
+from zimplistic_pyapp.master.gpio import *
 
 cam.cv_init()
 io = GPIO()

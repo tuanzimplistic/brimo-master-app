@@ -62,25 +62,15 @@
 X(  GUI_DATA_USER_QUERY,            int8_t,         -1                                                                )\
                                                                                                                        \
 /*  [Roti making screen] Number of Roti's to be made */                                                                \
-X(  GUI_DATA_ROTI_COUNT,            uint8_t,        1                                                                 )\
+X(  GUI_DATA_DRINK_INDEX,           string,         ""                                                                 )\
                                                                                                                        \
 /*  [Roti making screen] Number of Roti's that have been made */                                                       \
-X(  GUI_DATA_ROTI_MADE,             uint8_t,        0                                                                 )\
+X(  GUI_DATA_CUP_INDEX,             string,         ""                                                                 )\
                                                                                                                        \
 /*  [Roti making screen] Name of the recipe being used */                                                              \
 X(  GUI_DATA_RECIPE_NAME,           string,         "ROTI"                                                            )\
                                                                                                                        \
-/*  [Roti making screen] Name of the flour being used */                                                               \
-X(  GUI_DATA_FLOUR_NAME,            string,         "Pillsbury gold wholewheat atta"                                  )\
-                                                                                                                       \
-/*  [Roti making screen] Roast level (1 -> 5) */                                                                       \
-X(  GUI_DATA_ROAST_LEVEL,           uint8_t,        5                                                                 )\
-                                                                                                                       \
-/*  [Roti making screen] Thickness level (1 -> 5) */                                                                   \
-X(  GUI_DATA_THICKNESS_LEVEL,       uint8_t,        3                                                                 )\
-                                                                                                                       \
-/*  [Roti making screen] Oil level (1 -> 2) */                                                                         \
-X(  GUI_DATA_OIL_LEVEL,             uint8_t,        1                                                                 )\
+X(  GUI_DATA_DRINK_MENU,            string,         ""                                                                )\
                                                                                                                        \
 /*  [Roti making screen] Indicates if cooking has been started by user (1) or not (0) */                               \
 X(  GUI_DATA_COOKING_STARTED,       uint8_t,        0                                                                 )\

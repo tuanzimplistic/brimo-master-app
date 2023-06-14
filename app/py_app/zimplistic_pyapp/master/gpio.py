@@ -4,9 +4,9 @@ GPIO Class
 
 from collections import namedtuple
 import uasyncio
-from itor3_pyapp.app.log import *
-from itor3_pyapp import *
-from itor3_pyapp.master.itor3command import *
+from zimplistic_pyapp.app.log import *
+from zimplistic_pyapp import *
+from zimplistic_pyapp.master.itor3command import *
 
 class GPIOConstants():
     MB_ZPL_REQ2F                 = 0x2F

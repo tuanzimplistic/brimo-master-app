@@ -113,12 +113,7 @@ static int8_t s8_GUI_Start_Roti_Making_Screen (void);
 static int8_t s8_GUI_Stop_Roti_Making_Screen (void);
 static int8_t s8_GUI_Run_Roti_Making_Screen (void);
 static void v_GUI_Lbl_Wifi_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
-static void v_GUI_Roast_Level_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
-static void v_GUI_Thickness_Level_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
-static void v_GUI_Oil_Level_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
 static void v_GUI_Btn_Start_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
-static void v_GUI_Btn_Minus_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
-static void v_GUI_Btn_Plus_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
 static void v_GUI_Btn_Menu_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event);
 static void event_handler_drinks(lv_obj_t * px_obj, lv_event_t enm_event);
 static void event_handler_nocups(lv_obj_t * px_obj, lv_event_t enm_event);
@@ -180,10 +175,10 @@ static lv_obj_t * g_px_lbl_ap = NULL;
 static lv_obj_t * g_px_imgbtn_start;
 
 /** @brief  list of available drinks */
-const char *g_arr_drinks[7] = {"Cappuccino", "Mocha", "Cortado", "Latte", "Macchiato", "Espresso", "Affogato"};
+const char *g_arr_drinks[] = {"Cappuccino", "Mocha", "Cortado", "Latte", "Macchiato", "Espresso", "Affogato"};
 
 /** @brief  list of available no cups */
-const char *g_arr_nocups[7] = {"5", "10", "15", "20", "25", "30", "35"};
+const char *g_arr_nocups[] = {"5", "10", "15", "20", "25", "30", "35"};
 
 /** @brief  list of drinks */
 static lv_obj_t * g_list_drinks;
@@ -305,8 +300,6 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
         lv_obj_align (g_px_lbl_ap, px_lbl_wifi_background, LV_ALIGN_OUT_BOTTOM_MID, 0, 3);
 
         /* options */
-        lv_obj_t * btn;
-        int i;
         lv_obj_t * lbl_drinks = lv_label_create(px_right_panel, NULL);
         lv_obj_align( lbl_drinks, px_right_panel, LV_ALIGN_OUT_LEFT_TOP, 80, 20 );
         lv_label_set_text_fmt(lbl_drinks, "%s", "Choose a Drink");
@@ -317,18 +310,20 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
         lv_list_set_scrollbar_mode(g_list_drinks, LV_SCROLLBAR_MODE_AUTO);
 
         /*Add buttons to the list*/
-        for(i = 0; i < sizeof(g_arr_drinks)/sizeof(char*); i++) {
-            btn = lv_btn_create(g_list_drinks, NULL);
+        for(int i = 0; i < sizeof(g_arr_drinks)/sizeof(char*); i++) {
+            lv_obj_t * btn = lv_btn_create(g_list_drinks, NULL);
             lv_obj_set_width(btn, 120);
             lv_obj_set_event_cb(btn, event_handler_drinks);
-
+            if(i == 0)
+            {
+                g_btn_current_drink = btn;
+            }
             lv_obj_t * lbl = lv_label_create(btn, NULL);
             lv_obj_align( lbl, NULL, LV_ALIGN_CENTER, 0, 0 );
             lv_label_set_text_fmt(lbl, "%s", g_arr_drinks[i]);
         }
 
         /*Select the first button by default*/
-        g_btn_current_drink = lv_obj_get_child(g_list_drinks, 0);
         lv_obj_set_state(g_btn_current_drink, LV_STATE_CHECKED);
 
         /*Create a second list with up and down buttons*/
@@ -341,17 +336,19 @@ int8_t s8_GUI_Get_Roti_Making_Screen (GUI_screen_t ** ppstru_screen)
         lv_obj_align (g_list_no_cups, px_right_panel, LV_ALIGN_OUT_LEFT_TOP, 335, 50);
         lv_list_set_scrollbar_mode(g_list_no_cups, LV_SCROLLBAR_MODE_AUTO);
 
-        for(i = 0; i < sizeof(g_arr_nocups)/sizeof(char*); i++) {
-            btn = lv_btn_create(g_list_no_cups, NULL);
+        for(int i = 0; i < sizeof(g_arr_nocups)/sizeof(char*); i++) {
+            lv_obj_t * btn = lv_btn_create(g_list_no_cups, NULL);
             lv_obj_set_width(btn, 60);
             lv_obj_set_event_cb(btn, event_handler_nocups);
-
+            if(i == 0)
+            {
+                g_btn_current_cup = btn;
+            }
             lv_obj_t * lbl = lv_label_create(btn, NULL);
             lv_obj_align( lbl, NULL, LV_ALIGN_CENTER, 0, 0 );
             lv_label_set_text_fmt(lbl, "%s", g_arr_nocups[i]);
         }
 
-        g_btn_current_cup = lv_obj_get_child(g_list_no_cups, 0);
         lv_obj_set_state(g_btn_current_cup, LV_STATE_CHECKED);
         /* Start/Stop cooking button */
         g_px_imgbtn_start = lv_btn_create (px_right_panel, NULL);
@@ -559,6 +556,24 @@ static void v_GUI_Btn_Start_Event_Cb (lv_obj_t * px_obj, lv_event_t enm_event)
     /* Only process click event */
     if (enm_event == LV_EVENT_CLICKED)
     {
+        lv_obj_t * lbl = lv_obj_get_child(g_btn_current_drink, NULL);
+        char * tmp = lv_label_get_text(lbl);
+        for(uint8_t i = 0; i < sizeof(g_arr_drinks)/sizeof(char *); i++) {
+            if(strcmp(tmp, g_arr_drinks[i]) == 0)
+            {
+                s8_GUI_Set_Data (GUI_DATA_DRINK_INDEX, tmp, strlen(tmp)+1);
+            }
+        }
+
+        lbl = lv_obj_get_child(g_btn_current_cup, NULL);
+        tmp = lv_label_get_text(lbl);
+        for(uint8_t i = 0; i < sizeof(g_arr_nocups)/sizeof(char *); i++) {
+            if(strcmp(tmp, g_arr_nocups[i]) == 0)
+            {
+                s8_GUI_Set_Data (GUI_DATA_CUP_INDEX, tmp, strlen(tmp)+1);
+            }
+        }
+        
         /* Toggle cooking request */
         uint8_t u8_cooking_started = 0;
         if (s8_GUI_Get_Data (GUI_DATA_COOKING_STARTED, &u8_cooking_started, NULL) == GUI_OK)
