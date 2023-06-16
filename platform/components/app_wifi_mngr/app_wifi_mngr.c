@@ -42,7 +42,7 @@
 */
 
 /** @brief  ID of the CPU that App_Wifi_Mngr task runs on */
-#define WIFIMN_TASK_CPU_ID              0
+#define WIFIMN_TASK_CPU_ID              1
 
 /** @brief  Stack size (in bytes) of App_Wifi_Mngr task */
 #define WIFIMN_TASK_STACK_SIZE          4096

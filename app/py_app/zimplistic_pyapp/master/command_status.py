@@ -22,7 +22,7 @@ class CommandRetCode():
     ## General error
     CMD_RETCODE_GENERR = 0x04
 
-class Itor3Command(CommandRetCode):
+class CommandStatus(CommandRetCode):
     ##
     # @brief
     #      Constructor

@@ -4,7 +4,6 @@ Who Am I (WAI) class
 
 from collections import namedtuple
 from zimplistic_pyapp import *
-from zimplistic_pyapp.master.itor3command import *
 
 class WAIConstants():
     ## Switch context code
@@ -27,7 +26,7 @@ class WAIConstants():
     ## DS Command check period
     WAI_CMD_CHECK_TIME = 500
 
-class WAI(WAIConstants, Itor3Command):
+class WAI(WAIConstants, CommandStatus):
     ##
     # @brief
     #      Constructor
@@ -35,7 +34,7 @@ class WAI(WAIConstants, Itor3Command):
     def __init__(self):
         ## namedtyple to store the Module State
         self._slaveversion = namedtuple("SlaveVersion", "major minor patch dirty")
-        Itor3Command.__init__(self, self.WAI_COMMAND_TOUT, self.WAI_CMD_CHECK_TIME)
+        CommandStatus.__init__(self, self.WAI_COMMAND_TOUT, self.WAI_CMD_CHECK_TIME)
         
     ##
     # @brief
@@ -74,4 +73,5 @@ class WAI(WAIConstants, Itor3Command):
         _patch = dec.decode_1byte_uint()
         _dirty = dec.decode_1byte_uint()
 
+        logger.debug("get_version of slave")
         return self._slaveversion(_major, _minor, _patch, _dirty)

@@ -1,0 +1,2 @@
+class logger:
+    debug = None

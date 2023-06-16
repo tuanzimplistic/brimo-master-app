@@ -132,6 +132,15 @@ eMBMasterZPLReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLengt
 
     ENTER_CRITICAL_SECTION(  );
     assert( usMasterRcvBufferPos < MB_SER_PDU_SIZE_MAX );
+    
+    /////////////debug
+    if(usMasterRcvBufferPos >= MB_ZPL_SER_PDU_SIZE_MIN ){
+        USHORT len = ( USHORT )( usMasterRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC );
+        for(int i=0; i<len; i++){
+            ESP_LOGE("modbus", "data[%d] = %d", i, (int)(( UCHAR * ) ucMasterZPLRcvBuf)[i]);
+        }
+    }
+    /////////////debug
 
     /* Length and CRC check */
     if( ( usMasterRcvBufferPos >= MB_ZPL_SER_PDU_SIZE_MIN )
