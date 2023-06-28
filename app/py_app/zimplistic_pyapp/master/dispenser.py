@@ -7,53 +7,57 @@ import uasyncio
 
 
 class DSConstants():
-    ## Kicker Request Code.
-    DS_REQ_CODE    = 0x21
+    # Kicker Request Code.
+    DS_REQ_CODE = 0x21
 
-    ## Command Time out
+    # Command Time out
     DS_COMMAND_TOUT = 500
 
-    DS_IS_INGREDIENT_PRESENT    = 0x01
+    DS_IS_INGREDIENT_PRESENT = 0x01
 
-    DS_QUANTITY_INFO            = 0x02
+    DS_QUANTITY_INFO = 0x02
 
-    DS_INGREDIENT_BY_WEIGHT     = 0x03
+    DS_INGREDIENT_BY_WEIGHT = 0x03
 
-    DS_INGREDIENT_ABORT         = 0x04
+    DS_INGREDIENT_ABORT = 0x04
 
-    DS_GET_CURRENT_LOADCELL     = 0x05
-    
-    DS_CLEAR_ERROR_FLAG         = 0x06
+    DS_GET_CURRENT_LOADCELL = 0x05
 
-    DS_GET_STATUS               = 0x07
-    
-    ## Motor Error Bit
-    DS_BIT_MOTOR1_ERR            = 0x01
+    DS_CLEAR_ERROR_FLAG = 0x06
 
-    DS_BIT_MOTOR2_ERR            = 0x02
+    DS_GET_STATUS = 0x07
 
-    DS_BIT_MOTOR3_ERR            = 0x04
+    DS_INGREDIENT_BY_TIME = 0x08
 
-    DS_BIT_PUMP_ERR              = 0x06
+    # Motor Error Bit
+    DS_BIT_MOTOR1_ERR = 0x01
 
-    DS_BIT_SOLENOID1_ERR         = 0x08
+    DS_BIT_MOTOR2_ERR = 0x02
 
-    DS_BIT_SOLENOID2_ERR         = 0x10
+    DS_BIT_MOTOR3_ERR = 0x04
 
-    ## All Error bit
-    DS_BIT_ALL_ERRS         = (DS_BIT_MOTOR1_ERR | DS_BIT_MOTOR2_ERR | DS_BIT_MOTOR3_ERR | DS_BIT_PUMP_ERR | DS_BIT_SOLENOID1_ERR | DS_BIT_SOLENOID2_ERR)
+    DS_BIT_PUMP_ERR = 0x06
 
-    ## ACK
+    DS_BIT_SOLENOID1_ERR = 0x08
+
+    DS_BIT_SOLENOID2_ERR = 0x10
+
+    # All Error bit
+    DS_BIT_ALL_ERRS = (DS_BIT_MOTOR1_ERR | DS_BIT_MOTOR2_ERR | DS_BIT_MOTOR3_ERR |
+                       DS_BIT_PUMP_ERR | DS_BIT_SOLENOID1_ERR | DS_BIT_SOLENOID2_ERR)
+
+    # ACK
     ACK = 0x00
 
-    ## NACK
+    # NACK
     NACK = 0x01
 
-    ## DS Command execution timeout; maximum execution time of any command is 3 minutes
-    DS_CMD_EXE_TOUT     = 180000
+    # DS Command execution timeout; maximum execution time of any command is 3 minutes
+    DS_CMD_EXE_TOUT = 180000
 
-    ## DS Command check period
+    # DS Command check period
     DS_CMD_CHECK_TIME = 100
+
 
 class DS(DSConstants, CommandStatus):
     ##
@@ -61,7 +65,8 @@ class DS(DSConstants, CommandStatus):
     #      Constructor
     # ##
     def __init__(self):
-        CommandStatus.__init__(self, self.DS_CMD_EXE_TOUT, self.DS_CMD_CHECK_TIME)
+        CommandStatus.__init__(
+            self, self.DS_CMD_EXE_TOUT, self.DS_CMD_CHECK_TIME)
 
     def get_status(self):
         builder = CommandBuilder()
@@ -69,14 +74,14 @@ class DS(DSConstants, CommandStatus):
         builder.add_1byte_uint(self.DS_GET_STATUS)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
-        
-        # print(response) # for debugging
+
         if not response:
-            raise ValueError('DS get_status has no response')
+            raise ValueError('no response')
 
         dec = CommandDecoder(response, self.DS_REQ_CODE, self.DS_GET_STATUS)
-        
-        _ = dec.decode_1byte_uint()
+
+        if dec.decode_1byte_uint() != self.ACK:
+            raise ValueError("wrong ACK")
 
         id = dec.decode_1byte_uint()
         is_going = dec.decode_1byte_uint()
@@ -84,7 +89,6 @@ class DS(DSConstants, CommandStatus):
         return ('status', id, is_going, flags)
 
     def clear_error_flags(self):
-        retVal = True
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_CLEAR_ERROR_FLAG)
@@ -92,62 +96,59 @@ class DS(DSConstants, CommandStatus):
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
 
         if not response:
-            raise ValueError('DS clear_error_flags has no response')
+            raise ValueError('no response')
 
-        dec = CommandDecoder(response, self.DS_REQ_CODE, self.DS_CLEAR_ERROR_FLAG)
+        dec = CommandDecoder(response, self.DS_REQ_CODE,
+                             self.DS_CLEAR_ERROR_FLAG)
 
-        # Get ACK
         if dec.decode_1byte_uint() != self.ACK:
-            retVal = False
+            raise ValueError("wrong ACK")
 
-        return retVal
-    
-    def is_ingredient_present (self, id_of_ingredient):
+    def is_ingredient_present(self, id_of_ingredient):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_IS_INGREDIENT_PRESENT)
         builder.add_1byte_uint(id_of_ingredient)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
-        
-        #print(response) # for debugging
+
+        # print(response) # for debugging
         if not response:
-            raise ValueError('DS clear_error_flags has no response')
+            raise ValueError('no response')
 
-        dec = CommandDecoder(response, self.DS_REQ_CODE, self.DS_IS_INGREDIENT_PRESENT)
+        dec = CommandDecoder(response, self.DS_REQ_CODE,
+                             self.DS_IS_INGREDIENT_PRESENT)
 
-        # Get ACK
-        _ = dec.decode_1byte_uint()
+        if dec.decode_1byte_uint() != self.ACK:
+            raise ValueError("wrong ACK")
 
         status = dec.decode_1byte_uint()
 
         return status
 
-    def get_quantity_info (self, id_of_ingredient):
+    def get_quantity_info(self, id_of_ingredient):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_QUANTITY_INFO)
         builder.add_1byte_uint(id_of_ingredient)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
-        
-        #print(response) # for debugging
+
         if not response:
-            raise ValueError('DS clear_error_flags has no response')
+            raise ValueError('no response')
 
         dec = CommandDecoder(response, self.DS_REQ_CODE, self.DS_QUANTITY_INFO)
 
-        # Get ACK value
-        _ = dec.decode_1byte_uint()
-        #returns original qty of ingredients and qty remaining after use
+        if dec.decode_1byte_uint() != self.ACK:
+            raise ValueError("wrong ACK")
+
+        # returns original qty of ingredients and qty remaining after use
         origin_quantity = dec.decode_4bytes_q16()
         remaining_quantity = dec.decode_4bytes_q16()
 
         return ('origin_quantity', origin_quantity, ' remaining_quantity', remaining_quantity)
 
-
     def dispense_ingredient_by_weight(self, id_of_ingredient, expected_weight, timeout):
-        retVal = True
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_INGREDIENT_BY_WEIGHT)
@@ -156,53 +157,71 @@ class DS(DSConstants, CommandStatus):
         builder.add_2bytes_uint(timeout)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
-        
+
         if not response:
-            raise ValueError("HT run command has no response")
-        
-        ## Check that the response command is correct
-        dec = CommandDecoder(response, self.DS_REQ_CODE, self.DS_INGREDIENT_BY_WEIGHT)
+            raise ValueError("no response")
+
+        # Check that the response command is correct
+        dec = CommandDecoder(response, self.DS_REQ_CODE,
+                             self.DS_INGREDIENT_BY_WEIGHT)
 
         if dec.decode_1byte_uint() != self.ACK:
-            retVal = False
+            raise ValueError("wrong ACK")
 
-        return retVal
+    def dispense_ingredient_by_time(self, id_of_ingredient, expected_time, timeout):
+        builder = CommandBuilder()
+        builder.add_1byte_uint(self.DS_REQ_CODE)
+        builder.add_1byte_uint(self.DS_INGREDIENT_BY_TIME)
+        builder.add_1byte_uint(id_of_ingredient)
+        builder.add_4bytes_float(expected_weight)
+        builder.add_2bytes_uint(timeout)
+
+        response = send_command(builder.build(), self.DS_COMMAND_TOUT)
+
+        if not response:
+            raise ValueError("no response")
+
+        # Check that the response command is correct
+        dec = CommandDecoder(response, self.DS_REQ_CODE,
+                             self.DS_INGREDIENT_BY_TIME)
+
+        if dec.decode_1byte_uint() != self.ACK:
+            raise ValueError("wrong ACK")
 
     def dispense_ingredient_abort(self, id_of_ingredient):
-        retVal = True
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_INGREDIENT_ABORT)
         builder.add_1byte_uint(id_of_ingredient)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
-        
+
         if not response:
-            raise ValueError("HT run command has no response")
-        
-        ## Check that the response command is correct
-        dec = CommandDecoder(response, self.DS_REQ_CODE, self.DS_INGREDIENT_ABORT)
+            raise ValueError("no response")
+
+        # Check that the response command is correct
+        dec = CommandDecoder(response, self.DS_REQ_CODE,
+                             self.DS_INGREDIENT_ABORT)
 
         if dec.decode_1byte_uint() != self.ACK:
-            retVal = False
+            raise ValueError("wrong ACK")
 
-        return retVal
-    
     def get_current_loadcell(self):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_GET_CURRENT_LOADCELL)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
-        
-        #print(response) # for debugging
+
+        # print(response) # for debugging
         if not response:
-            raise ValueError('DS clear_error_flags has no response')
+            raise ValueError('no response')
 
-        dec = CommandDecoder(response, self.DS_REQ_CODE, self.DS_GET_CURRENT_LOADCELL)
+        dec = CommandDecoder(response, self.DS_REQ_CODE,
+                             self.DS_GET_CURRENT_LOADCELL)
 
-        # Get ACK value
-        _ = dec.decode_1byte_uint()
+        if dec.decode_1byte_uint() != self.ACK:
+            raise ValueError("wrong ACK")
 
         current_loadcell = dec.decode_4bytes_q16()
 
@@ -231,7 +250,7 @@ class DS(DSConstants, CommandStatus):
                 break
             cnt -= 1
             await uasyncio.sleep_ms(self._cmd_check_period)
-        
+
         if state == self._curState:
             retVal = self.CMD_RETCODE_TOUTERR
             logger.debug(self.get_status().flags)

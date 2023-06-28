@@ -1,7 +1,8 @@
-import uasyncio
-from zimplistic_pyapp.app.log import *
-from zimplistic_pyapp.app.app import *
-logger.setLevel(logging.DEBUG)
+try:
+    import asyncio as uasyncio
+except ImportError:
+    import uasyncio
+from actions import map_actions
 
 filtered_coffee_receipe = {}
 filtered_coffee_receipe[1] = {'water': 100,
@@ -15,21 +16,21 @@ filtered_coffee_receipe[4] = {'water': 400,
 filtered_coffee_receipe[5] = {'water': 500,
                               'coffee': 65, 'sugar': 75, 'milk': 500}
 filtered_coffee_formula = [
-    ['dispenser => water', 'heater => 100 => off'],
-    ['dispenser => sugar'],
-    ['dispenser => coffee'],
-    ['heater => 100 => keep', 'stirrer => 150'],
-    ['sleep => 180'],
-    ['heater => off'],
-    ['sleep => 120'],
-    ['stirrer => off'],
-    ['dispenser => milk'],
-    ['heater => 45 => off'],
-    ['stirrer => 1500'],
-    ['sleep => 120'],
-    ['stirrer => off'],
-    ['heater => 70 => off'],
-    ['alarm => on'],
+    ['act:dispenser(water)', 'act:heater_on(100)|post:heater_off()'],
+    ['pre:is_temp(100)|act:dispenser(sugar)'],
+    ['act:dispenser(coffee)'],
+    ['act:heater_on(100)', 'act:stirrer_on(150)'],
+    ['act:sleep(3)'], #180
+    ['act:heater_off()'],
+    ['act:sleep(4)'],#120
+    ['act:stirrer_off()'],
+    ['act:dispenser(milk)'],
+    ['act:heater_on(45)|post:heater_off()'],
+    ['act:stirrer_on(1500)'],
+    ['act:sleep(5)'],#120
+    ['act:stirrer_off()'],
+    ['act:heater_on(70)|post:heater_off()'],
+    ['act:alarm(on)'],
 ]
 
 filtered_coffee_receipe[0] = filtered_coffee_formula
@@ -53,49 +54,59 @@ receipes = {
 
 user_receipe = 'filtered coffee'
 user_cups = 1
-
-# print(receipes[user_receipe][user_cups])
-
-
-class Wait:
-    def __init__(self):
-        self.count = 0
-        self.ev = uasyncio.Event()
-        self.lock = uasyncio.Lock()
-
-    def set_ref(self, count):
-        self.count = count
-
-    async def notify(self):
-        async with self.lock:
-            self.count -= 1
-            if self.count == 0:
-                self.ev.set()
-
-    async def done(self):
-        await self.ev.wait()
-        self.ev.clear()
+user_chosen = receipes[user_receipe][user_cups]
 
 
 class Worker:
-    def __init__(self, id, notify):
-        self.notify = notify
+    def __init__(self, id):
         self.id = id
         self.queue = []
-        self.ev = uasyncio.Event()
-        self.run = True
+        self.done = uasyncio.Event()
+        self.running = True
+    
+    def parse_func(self, element):
+        s = element.index(':')
+        e = element.index('(')
+        func = element[s+1:e]
+        p = element[e+1:len(element)-1]
+        return func, p
 
-    async def execute(self):
-        while self.run:
-            await self.ev.wait()
-            self.ev.clear()
-            command = self.queue.pop(0)
-            await uasyncio.sleep(3)
-            print('w', self.id, command)
-            await self.notify()
+    async def execute(self, cmd):
+        cmd = cmd.split('|')
+        for element in cmd:
+            valid = False
+            if element.startswith('pre'):
+                valid = True
+            elif element.startswith('act'):
+                valid = True
+            elif element.startswith('post'):
+                valid = True
+            if valid:
+                func, p = self.parse_func(element)
+                if func in map_actions:
+                    invoke = map_actions[func]([user_chosen] + p.split(','))
+                    await invoke
+                else:
+                    print('invalid function')
+            else:
+                print('invalid action')
+            
+    async def run(self):
+        while self.running:
+            if len(self.queue) > 0:
+                command = self.queue.pop(0)
+                print('w', self.id, command)
+                await self.execute(command)
+                self.iamdone()
+            else:
+                await uasyncio.sleep(0.5)
 
-    def trigger(self):
-        self.ev.set()
+    def iamdone(self):
+        self.done.set()
+
+    async def wait_done(self):
+        await self.done.wait()
+        self.done.clear()
 
     def put(self, command):
         self.queue.append(command)
@@ -105,27 +116,22 @@ class app:
     def __init__(self):
         print('this is brimo app')
 
-    async def make(self):
-        wait = Wait()
-        w1 = Worker(1, wait.notify)
-        w2 = Worker(2, wait.notify)
+    async def makeit(self):
+        w1 = Worker(1)
+        w2 = Worker(2)
 
-        tasks = [uasyncio.create_task(w1.execute()),
-                 uasyncio.create_task(w2.execute())]
-
+        tasks = [uasyncio.create_task(w1.run()),
+                 uasyncio.create_task(w2.run())]
+        ## just care main worker ##
         for command in filtered_coffee_receipe[0]:
             count = len(command)
-            wait.set_ref(count)
             if count == 1:
                 w1.put(command[0])
-                w1.trigger()
             else:
                 w1.put(command[0])
                 w2.put(command[1])
-                w1.trigger()
-                w2.trigger()
-            await wait.done()
-            print('next command =>')
+            await w1.wait_done()
+            print('=>>>> next command =>>>>')
 
-# app = app()
-# uasyncio.run(app.make())
+#app = app()
+#uasyncio.run(app.makeit())
