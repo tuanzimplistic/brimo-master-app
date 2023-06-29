@@ -68,10 +68,11 @@ class DS(DSConstants, CommandStatus):
         CommandStatus.__init__(
             self, self.DS_CMD_EXE_TOUT, self.DS_CMD_CHECK_TIME)
 
-    def get_status(self):
+    def get_status(self, id_of_ingredient):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_GET_STATUS)
+        builder.add_1byte_uint(id_of_ingredient)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
 
@@ -88,10 +89,11 @@ class DS(DSConstants, CommandStatus):
         flags = dec.decode_1byte_uint()
         return ('status', id, is_going, flags)
 
-    def clear_error_flags(self):
+    def clear_error_flags(self, id_of_ingredient):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_CLEAR_ERROR_FLAG)
+        builder.add_1byte_uint(id_of_ingredient)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
 
@@ -168,13 +170,12 @@ class DS(DSConstants, CommandStatus):
         if dec.decode_1byte_uint() != self.ACK:
             raise ValueError("wrong ACK")
 
-    def dispense_ingredient_by_time(self, id_of_ingredient, expected_time, timeout):
+    def dispense_ingredient_by_time(self, id_of_ingredient, expected_time):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
         builder.add_1byte_uint(self.DS_INGREDIENT_BY_TIME)
         builder.add_1byte_uint(id_of_ingredient)
-        builder.add_4bytes_float(expected_weight)
-        builder.add_2bytes_uint(timeout)
+        builder.add_2bytes_uint(expected_time)
 
         response = send_command(builder.build(), self.DS_COMMAND_TOUT)
 
