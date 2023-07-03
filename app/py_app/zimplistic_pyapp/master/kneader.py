@@ -121,7 +121,7 @@ class KN(KNConstants, CommandStatus):
         state = dec.decode_1byte_uint()
         return state
 
-    def get_stirrer_status(self):
+    def get_status(self):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.KNEADER_REQ_CODE)
         builder.add_1byte_uint(self.GET_STIRRER_STATUS)
@@ -138,9 +138,10 @@ class KN(KNConstants, CommandStatus):
 
         state = dec.decode_1byte_uint()
         flags = dec.decode_1byte_uint()
+        attached = dec.decode_1byte_uint()
         rpm = dec.decode_4bytes_q16()
         current = dec.decode_4bytes_q16()
-        return ('stirrer_status', state, flags, rpm, current)
+        return ('stirrer_status', state, flags, attached, rpm, current)
 
     def stirrer_attach(self):
         builder = CommandBuilder()

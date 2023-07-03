@@ -6,26 +6,30 @@ from ustruct import unpack
 from zimplistic_pyapp.mb_binding.constants import Endian, FormatCharacters
 
 ##
-# @brief 
+# @brief
 # This class is used to decode the memory buffer sent from C.
 # ##
+
+
 class CommandDecoder(object):
-    def __init__(self, adu, reqcode, subcode, byteorder = Endian.LITTLE):
+    def __init__(self, adu, reqcode, subcode, byteorder=Endian.LITTLE):
         """
         Constructor.
         """
         self._byteorder = byteorder
         self._adu = adu
-        self._reqcode   = reqcode
-        self._subcode   = subcode
+        self._reqcode = reqcode
+        self._subcode = subcode
         self._pointer = 0
-        
+
         # read moduleid and sub command from adu
         # assert that the expected moduleid and sub command
-        if  parsed_code := self.decode_1byte_uint() != self._reqcode:
-            raise ValueError('Module ID mismatch! Expected {}, Found {}', self._reqcode, parsed_code)
-        if  parsed_code := self.decode_1byte_uint() != self._subcode:
-            raise ValueError('Sub Commandd mismatch! Expected {}, Found {}', self._subcode, parsed_code)
+        if parsed_code := self.decode_1byte_uint() != self._reqcode:
+            raise ValueError(('Module ID mismatch! Expected {}, Found {}').format(
+                self._reqcode, parsed_code))
+        if parsed_code := self.decode_1byte_uint() != self._subcode:
+            raise ValueError(('Sub Commandd mismatch! Expected {}, Found {}').format(
+                self._subcode, parsed_code))
 
     def _decode(self, value, character):
         fstring = self._byteorder + character
@@ -50,7 +54,6 @@ class CommandDecoder(object):
         """
         handle = self._get_next(4)
         return self._decode(handle, FormatCharacters.UINT4)
-
 
     def decode_4bytes_uint(self):
         """

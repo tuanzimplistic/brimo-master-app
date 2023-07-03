@@ -47,6 +47,7 @@ class HT(HTConstants):
         builder.add_1byte_uint(self.HT_REQ_CODE)
         builder.add_1byte_uint(self.HT_GET_TEMP)
         builder.add_1byte_uint(sensor_id)
+
         response = send_command(builder.build(), self.HT_COMMAND_TOUT)
 
         if not response:
@@ -65,6 +66,7 @@ class HT(HTConstants):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.HT_REQ_CODE)
         builder.add_1byte_uint(self.HT_CLEAR_ERROR)
+
         response = send_command(builder.build(), self.HT_COMMAND_TOUT)
 
         if not response:
@@ -97,6 +99,7 @@ class HT(HTConstants):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.HT_REQ_CODE)
         builder.add_1byte_uint(self.HT_OFF)
+
         response = send_command(builder.build(), self.HT_COMMAND_TOUT)
 
         if not response:
@@ -112,6 +115,7 @@ class HT(HTConstants):
         builder.add_1byte_uint(self.HT_REQ_CODE)
         builder.add_1byte_uint(self.HT_COOL_ON)
         builder.add_1byte_uint(fan_id)
+
         response = send_command(builder.build(), self.HT_COMMAND_TOUT)
 
         if not response:
@@ -127,6 +131,7 @@ class HT(HTConstants):
         builder.add_1byte_uint(self.HT_REQ_CODE)
         builder.add_1byte_uint(self.HT_COOL_OFF)
         builder.add_1byte_uint(fan_id)
+
         response = send_command(builder.build(), self.HT_COMMAND_TOUT)
 
         if not response:
