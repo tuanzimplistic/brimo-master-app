@@ -17,17 +17,17 @@ filtered_coffee_receipe[5] = {'water': 500,
                               'coffee': 65, 'sugar': 75, 'milk': 500}
 filtered_coffee_formula = [
     ['act:dispenser(water)', 'act:heater_on(100)|post:heater_off()'],
-    ['pre:is_temp(100)|act:dispenser(sugar)'],
+    ['pre:wait_temp(0,100)|act:dispenser(sugar)'],
     ['act:dispenser(coffee)'],
     ['act:heater_on(100)', 'act:stirrer_on(150)'],
-    ['act:sleep(3)'], #180
+    ['act:sleep(9)'],  # 180
     ['act:heater_off()'],
-    ['act:sleep(4)'],#120
+    ['act:sleep(9)'],  # 120
     ['act:stirrer_off()'],
     ['act:dispenser(milk)'],
     ['act:heater_on(45)|post:heater_off()'],
     ['act:stirrer_on(1500)'],
-    ['act:sleep(5)'],#120
+    ['act:sleep(9)'],  # 120
     ['act:stirrer_off()'],
     ['act:heater_on(70)|post:heater_off()'],
     ['act:alarm(on)'],
@@ -63,7 +63,7 @@ class Worker:
         self.queue = []
         self.done = uasyncio.Event()
         self.running = True
-    
+
     def parse_func(self, element):
         s = element.index(':')
         e = element.index('(')
@@ -85,18 +85,25 @@ class Worker:
                 func, p = self.parse_func(element)
                 if func in map_actions:
                     invoke = map_actions[func]([user_chosen] + p.split(','))
-                    await invoke
+                    try:
+                        print('execute', func, p.split(','))
+                        await invoke
+                    except Exception as e:
+                        # fix multiple params failed
+                        print('********************', e,
+                              ' at ', func, p.split(','))
                 else:
                     print('invalid function')
             else:
                 print('invalid action')
-            
+
     async def run(self):
         while self.running:
             if len(self.queue) > 0:
                 command = self.queue.pop(0)
                 print('w', self.id, command)
                 await self.execute(command)
+                await uasyncio.sleep(1)
                 self.iamdone()
             else:
                 await uasyncio.sleep(0.5)
@@ -133,5 +140,6 @@ class app:
             await w1.wait_done()
             print('=>>>> next command =>>>>')
 
+
 #app = app()
-#uasyncio.run(app.makeit())
+# uasyncio.run(app.makeit())

@@ -57,19 +57,6 @@ class KN(KNConstants, CommandStatus):
         CommandStatus.__init__(
             self, self.KNEADER_CMD_EXETOUT, self.KNEADER_CMD_CHECK_TIME)
 
-    ##
-    # @brief
-    #      Clear the error flag of Kneader module. When the previous command to control
-    #      kneader module failed, this command should be sent befor any other commands.
-    #
-    # @details
-    #      This function creates a sending buffer and sent it to the modbus.
-    #
-    #
-    # @return
-    #      @arg    True: Sending successful.
-    #      @arg    False: Sending failed.
-    # ##
     def clear_error_flags(self):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.KNEADER_REQ_CODE)

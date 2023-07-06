@@ -27,8 +27,6 @@ class DSConstants():
 
     DS_GET_STATUS = 0x07
 
-    DS_INGREDIENT_BY_TIME = 0x08
-
     # Motor Error Bit
     DS_BIT_MOTOR1_ERR = 0x01
 
@@ -170,25 +168,6 @@ class DS(DSConstants, CommandStatus):
         if dec.decode_1byte_uint() != self.ACK:
             raise ValueError("wrong ACK")
 
-    def dispense_ingredient_by_time(self, id_of_ingredient, expected_time):
-        builder = CommandBuilder()
-        builder.add_1byte_uint(self.DS_REQ_CODE)
-        builder.add_1byte_uint(self.DS_INGREDIENT_BY_TIME)
-        builder.add_1byte_uint(id_of_ingredient)
-        builder.add_2bytes_uint(expected_time)
-
-        response = send_command(builder.build(), self.DS_COMMAND_TOUT)
-
-        if not response:
-            raise ValueError("no response")
-
-        # Check that the response command is correct
-        dec = CommandDecoder(response, self.DS_REQ_CODE,
-                             self.DS_INGREDIENT_BY_TIME)
-
-        if dec.decode_1byte_uint() != self.ACK:
-            raise ValueError("wrong ACK")
-
     def dispense_ingredient_abort(self, id_of_ingredient):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.DS_REQ_CODE)
@@ -226,7 +205,7 @@ class DS(DSConstants, CommandStatus):
 
         current_loadcell = dec.decode_4bytes_q16()
 
-        return ('current_loadcell', current_loadcell)
+        return current_loadcell
 
     ##
     # @brief

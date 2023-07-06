@@ -15,7 +15,7 @@ class HTConstants():
     HT_COMMAND_TOUT = 500
 
     # Get state subcode
-    HT_GET_TEMP = 0x01
+    HT_GET_STATUS = 0x01
 
     HT_CLEAR_ERROR = 0x02
 
@@ -42,10 +42,10 @@ class HT(HTConstants):
     def __init__(self):
         pass
 
-    def get_temp(self, sensor_id):
+    def get_status(self, sensor_id):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.HT_REQ_CODE)
-        builder.add_1byte_uint(self.HT_GET_TEMP)
+        builder.add_1byte_uint(self.HT_GET_STATUS)
         builder.add_1byte_uint(sensor_id)
 
         response = send_command(builder.build(), self.HT_COMMAND_TOUT)
@@ -53,7 +53,7 @@ class HT(HTConstants):
         if not response:
             raise ValueError('no response')
 
-        dec = CommandDecoder(response, self.HT_REQ_CODE, self.HT_GET_TEMP)
+        dec = CommandDecoder(response, self.HT_REQ_CODE, self.HT_GET_STATUS)
 
         if dec.decode_1byte_uint() != self.ACK:
             raise ValueError("wrong ACK")
@@ -77,12 +77,11 @@ class HT(HTConstants):
         if dec.decode_1byte_uint() != self.ACK:
             raise ValueError("wrong ACK")
 
-    def heater_on(self, set_temperature, timeout):
+    def heater_on(self, set_temperature):
         builder = CommandBuilder()
         builder.add_1byte_uint(self.HT_REQ_CODE)
         builder.add_1byte_uint(self.HT_ON)
         builder.add_4bytes_float(set_temperature)
-        builder.add_2bytes_uint(timeout)
 
         response = send_command(builder.build(), self.HT_COMMAND_TOUT)
 
