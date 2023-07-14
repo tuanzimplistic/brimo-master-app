@@ -36,7 +36,7 @@ void            eMBMasterZPLStart( void );
 void            eMBMasterZPLStop( void );
 eMBErrorCode    eMBMasterZPLReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength );
 eMBErrorCode    eMBMasterZPLSend( UCHAR slaveAddress, const UCHAR * pucFrame, USHORT usLength );
-BOOL            xMBMasterZPLReceiveFSM(  UCHAR ucByte );
+BOOL            xMBMasterZPLReceiveFSM( void );
 BOOL            xMBMasterZPLTransmitFSM( void );
 BOOL            xMBMasterZPLTimerExpired( void );
 #endif

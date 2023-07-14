@@ -132,15 +132,6 @@ eMBMasterZPLReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLengt
 
     ENTER_CRITICAL_SECTION(  );
     assert( usMasterRcvBufferPos < MB_SER_PDU_SIZE_MAX );
-    
-    /////////////debug
-    if(usMasterRcvBufferPos >= MB_ZPL_SER_PDU_SIZE_MIN ){
-        USHORT len = ( USHORT )( usMasterRcvBufferPos - MB_SER_PDU_PDU_OFF - MB_SER_PDU_SIZE_CRC );
-        for(int i=0; i<len; i++){
-            ESP_LOGE("modbus", "data[%d] = %d", i, (int)(( UCHAR * ) ucMasterZPLRcvBuf)[i]);
-        }
-    }
-    /////////////debug
 
     /* Length and CRC check */
     if( ( usMasterRcvBufferPos >= MB_ZPL_SER_PDU_SIZE_MIN )
@@ -211,9 +202,15 @@ eMBMasterZPLSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength 
 }
 
 BOOL
-xMBMasterZPLReceiveFSM( UCHAR ucByte )
+xMBMasterZPLReceiveFSM( void )
 {
+    BOOL            xStatus = FALSE;
+    UCHAR           ucByte;
+
     assert(( eSndState == STATE_M_TX_IDLE ) || ( eSndState == STATE_M_TX_XFWR ));
+
+    /* Always read the character. */
+    xStatus = xMBMasterPortSerialGetByte( ( CHAR * ) & ucByte );
 
     switch ( eRcvState )
     {
@@ -259,7 +256,9 @@ xMBMasterZPLReceiveFSM( UCHAR ucByte )
     case STATE_M_RX_RCV:
         if( usMasterRcvBufferPos < MB_SER_PDU_SIZE_MAX )
         {
-            ucMasterZPLRcvBuf[usMasterRcvBufferPos++] = ucByte;
+            if ( xStatus ) {
+                ucMasterZPLRcvBuf[usMasterRcvBufferPos++] = ucByte;
+            }
         }
         else
         {
@@ -268,7 +267,7 @@ xMBMasterZPLReceiveFSM( UCHAR ucByte )
         vMBMasterPortTimersT35Enable( );
         break;
     }
-    return TRUE;
+    return xStatus;
 }
 
 BOOL
@@ -330,7 +329,7 @@ BOOL MB_PORT_ISR_ATTR xMBMasterZPLTimerExpired(void)
     case STATE_M_RX_INIT:
         xNeedPoll = xMBMasterPortEventPost(EV_MASTER_READY);
         break;
-
+        
         /* A frame was received and t35 expired. Notify the listener that
          * a new frame was received. */
     case STATE_M_RX_RCV:

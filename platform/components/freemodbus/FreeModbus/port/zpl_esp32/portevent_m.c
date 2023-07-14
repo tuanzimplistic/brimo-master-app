@@ -62,6 +62,7 @@
 
 
 /* ----------------------- Variables ----------------------------------------*/
+static SemaphoreHandle_t xSemaphorMasterHdl;
 static EventGroupHandle_t xEventGroupMasterHdl;
 
 /* ----------------------- Start implementation -----------------------------*/
@@ -135,6 +136,8 @@ xMBMasterPortEventGet( eMBMasterEventType * eEvent)
 // This function is initialize the OS resource for modbus master.
 void vMBMasterOsResInit( void )
 {
+    xSemaphorMasterHdl = xSemaphoreCreateBinary();
+    MB_PORT_CHECK((xSemaphorMasterHdl != NULL), ; , "%s: OS semaphore create error.", __func__);
 }
 
 /**
@@ -147,6 +150,12 @@ void vMBMasterOsResInit( void )
  */
 BOOL xMBMasterRunResTake( LONG lTimeOut )
 {
+    BaseType_t xStatus = pdTRUE;
+
+    // If waiting time is -1. It will wait forever
+    xStatus = xSemaphoreTake(xSemaphorMasterHdl, lTimeOut );
+    MB_PORT_CHECK((xStatus == pdTRUE), FALSE , "%s:Take resource failure.", __func__);
+    ESP_LOGV(MB_PORT_TAG,"%s:Take resource (%lu ticks).", __func__, lTimeOut);
     return TRUE;
 }
 
@@ -156,6 +165,9 @@ BOOL xMBMasterRunResTake( LONG lTimeOut )
  */
 void vMBMasterRunResRelease( void )
 {
+    BaseType_t xStatus = pdFALSE;
+    xStatus = xSemaphoreGive(xSemaphorMasterHdl);
+    MB_PORT_CHECK((xStatus == pdTRUE), ; , "%s: resource release failure.", __func__);
 }
 
 /**
@@ -265,6 +277,7 @@ eMBMasterReqErrCode eMBMasterWaitRequestFinish( void ) {
 void vMBMasterPortEventClose(void)
 {
     vEventGroupDelete(xEventGroupMasterHdl);
+    vSemaphoreDelete(xSemaphorMasterHdl);
 }
 
 #endif /* #if defined(CONFIG_MODBUS_ZPL_MASTER) */

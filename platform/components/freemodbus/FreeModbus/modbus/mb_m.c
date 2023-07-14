@@ -1,4 +1,4 @@
-/*
+/* 
  * FreeModbus Libary: A portable Modbus implementation for Modbus ASCII/RTU.
  * Copyright (C) 2013 Armink <armink.ztl@gmail.com>
  * All rights reserved.
@@ -86,7 +86,7 @@ static pvMBFrameClose pvMBMasterFrameCloseCur;
  * or transmission of a character.
  * Using for Modbus Master,Add by Armink 20130813
  */
-BOOL( *pxMBMasterFrameCBByteReceived ) ( UCHAR ucByte );
+BOOL( *pxMBMasterFrameCBByteReceived ) ( void );
 
 BOOL( *pxMBMasterFrameCBTransmitterEmpty ) ( void );
 
